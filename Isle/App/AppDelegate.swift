@@ -1,7 +1,9 @@
 import AppKit
 
-/// Здесь при запуске будут создаваться окна острова (этап 1).
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private(set) var island: IslandController?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        island = IslandController()
     }
 }
