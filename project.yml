@@ -11,9 +11,9 @@ settings:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    # Пока сертификата «Isle Dev» нет — подпись ad-hoc ("-").
-    # Когда создашь сертификат в «Связке ключей», поменяй на "Isle Dev".
-    CODE_SIGN_IDENTITY: "-"
+    # Самоподписанный сертификат из связки «вход» — чтобы macOS
+    # не сбрасывала разрешения (камера, запись экрана) после каждой сборки.
+    CODE_SIGN_IDENTITY: "Isle Dev"
     CODE_SIGN_STYLE: Manual
     DEVELOPMENT_TEAM: ""
     ENABLE_HARDENED_RUNTIME: NO
