@@ -1,0 +1,47 @@
+name: Isle
+options:
+  bundleIdPrefix: dev.isle
+  deploymentTarget:
+    macOS: "14.0"
+  developmentLanguage: ru
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Пока сертификата «Isle Dev» нет — подпись ad-hoc ("-").
+    # Когда создашь сертификат в «Связке ключей», поменяй на "Isle Dev".
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    SWIFT_EMIT_LOC_STRINGS: YES
+
+targets:
+  Isle:
+    type: application
+    platform: macOS
+    sources:
+      - Isle
+    info:
+      path: Isle/Info.plist
+      properties:
+        CFBundleDisplayName: Isle
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: ""
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.isle.Isle
+        ENABLE_APP_SANDBOX: NO
+        GENERATE_INFOPLIST_FILE: NO
+
+schemes:
+  Isle:
+    build:
+      targets:
+        Isle: all
+    run:
+      config: Debug
