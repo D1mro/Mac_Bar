@@ -6,23 +6,50 @@ struct IsleApp: App {
 
     var body: some Scene {
         MenuBarExtra("Isle", systemImage: "capsule.fill") {
-            #if DEBUG
-            // Временные пункты для ручной проверки состояний острова.
-            Button(String(localized: "Тест: уведомление")) {
-                appDelegate.island?.model.show(
-                    IslandNotification(icon: "doc.on.clipboard", text: String(localized: "Скопировано"))
-                )
-            }
-            Button(String(localized: "Тест: музыка вкл/выкл")) {
-                guard let model = appDelegate.island?.model else { return }
-                withAnimation(IslandViewModel.animation) { model.isMusicPlaying.toggle() }
-            }
-            Divider()
-            #endif
-            Button(String(localized: "Выйти")) {
-                NSApplication.shared.terminate(nil)
-            }
-            .keyboardShortcut("q")
+            MenuContent(appDelegate: appDelegate)
         }
+
+        Settings {
+            SettingsView()
+        }
+    }
+}
+
+/// Пункты меню в строке меню.
+private struct MenuContent: View {
+    let appDelegate: AppDelegate
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some View {
+        Button(String(localized: "Скриншот в буфер")) {
+            appDelegate.island?.model.takeScreenshot()
+        }
+        Button(String(localized: "Настройки…")) {
+            // У приложения-агента нет Dock-иконки, поэтому активируем его вручную,
+            // иначе окно настроек откроется за другими окнами.
+            NSApp.activate(ignoringOtherApps: true)
+            openSettings()
+        }
+        .keyboardShortcut(",")
+
+        #if DEBUG
+        Divider()
+        // Временные пункты для ручной проверки состояний острова.
+        Button(String(localized: "Тест: уведомление")) {
+            appDelegate.island?.model.show(
+                IslandNotification(icon: "doc.on.clipboard", text: String(localized: "Скопировано"))
+            )
+        }
+        Button(String(localized: "Тест: музыка вкл/выкл")) {
+            guard let model = appDelegate.island?.model else { return }
+            withAnimation(IslandViewModel.animation) { model.isMusicPlaying.toggle() }
+        }
+        #endif
+
+        Divider()
+        Button(String(localized: "Выйти")) {
+            NSApplication.shared.terminate(nil)
+        }
+        .keyboardShortcut("q")
     }
 }

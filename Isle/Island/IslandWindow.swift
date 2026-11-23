@@ -14,7 +14,11 @@ final class IslandWindow: NSPanel {
                    defer: false)
         isFloatingPanel = true
         level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
-        collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+        // .transient — окно прячется в Mission Control (свайп тремя пальцами вверх),
+        // но остаётся на всех рабочих столах и поверх полноэкранных приложений.
+        collectionBehavior = [.canJoinAllSpaces, .transient, .fullScreenAuxiliary, .ignoresCycle]
+        // Не попадать на скриншоты и запись экрана.
+        sharingType = .none
         backgroundColor = .clear
         isOpaque = false
         hasShadow = false

@@ -88,7 +88,8 @@ final class IslandViewModel {
 
     /// Раскрываемся через 0.05 сек после наведения, закрываемся через 0.3 сек после ухода.
     func setHovering(_ hovering: Bool) {
-        guard hovering != isHovering else { return }
+        // Пока идёт скриншот, остров не раскрывается от курсора.
+        guard !isCapturing, hovering != isHovering else { return }
         isHovering = hovering
         hoverTask?.cancel()
         let delay: Duration = hovering ? .milliseconds(50) : .milliseconds(300)
@@ -99,6 +100,36 @@ final class IslandViewModel {
                 HapticService.tap()
             }
             withAnimation(Self.animation) { self.isExpanded = hovering }
+        }
+    }
+
+    /// Сразу свернуть остров (например, перед скриншотом, чтобы не мешал).
+    func collapse() {
+        hoverTask?.cancel()
+        isHovering = false
+        withAnimation(Self.animation) { isExpanded = false }
+    }
+
+    // MARK: - Действия
+
+    /// Скриншот области в буфер → «Скопировано» + хаптик.
+    private var isCapturing = false
+
+    func takeScreenshot() {
+        guard !isCapturing else { return }
+        collapse()
+        isCapturing = true
+        Task {
+            defer { isCapturing = false }
+            switch await ScreenshotService.captureToClipboard() {
+            case .copied:
+                show(IslandNotification(icon: "doc.on.clipboard", text: String(localized: "Скопировано")))
+                HapticService.tap()
+            case .noPermission:
+                show(IslandNotification(icon: "lock.fill", text: String(localized: "Нужен доступ")))
+            case .cancelled:
+                break
+            }
         }
     }
 

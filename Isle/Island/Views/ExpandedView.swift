@@ -20,7 +20,7 @@ struct ExpandedView: View {
                 switch model.selectedTab {
                 case .music: MusicTab()
                 case .camera: CameraTab()
-                case .tools: ToolsTab()
+                case .tools: ToolsTab(model: model)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

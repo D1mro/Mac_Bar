@@ -103,6 +103,9 @@ Isle/
     IslandViewModel.swift    — state machine, @Observable
     IslandShape.swift        — форма с вогнутыми ушами
     Views/ (CompactView, ExpandedView, MusicTab, CameraTab, ToolsTab)
+  Screenshot/
+    ScreenshotOverlay.swift  — оверлей выбора области/окна/всего экрана
+    ScreenshotOverlayView.swift
   Services/
     ScreenGeometry.swift     — размер/позиция выреза, мониторы без выреза
     HotkeyService.swift
@@ -136,12 +139,14 @@ Isle/
 - Позиция по центру сверху главного экрана, размер выреза через `safeAreaInsets` и `auxiliaryTopLeftArea/RightArea`. Нет выреза — капсула 190×32.
 - `IslandShape`, state machine, раскрытие по наведению, анимации.
 - Окно пропускает клики там, где острова нет (иначе блокирует меню).
+- Прячется в Mission Control (`.transient`) и не попадает на скриншоты (`sharingType = .none`).
 - Перестраиваться при смене мониторов (`NSApplication.didChangeScreenParametersNotification`).
 - **Готово когда:** остров незаметен в покое, плавно раскрывается при наведении, не мешает строке меню.
 
 ### Этап 2 — Скриншот в буфер
 - Глобальная горячая клавиша (по умолчанию ⌃⇧S, настраивается).
-- Запуск `/usr/sbin/screencapture -i -c` (выделение области → сразу в буфер).
+- Свой оверлей выбора (`Screenshot/ScreenshotOverlay`): протянуть — область, клик по окну — окно по рамкам, прозрачная кнопка «Весь экран» по центру чуть сверху, Esc — отмена. Снимок — `/usr/sbin/screencapture -c -R …` / `-c -o -l <id>` сразу в буфер.
+- Перед снимком проверить доступ «Запись экрана» (`CGPreflightScreenCaptureAccess`), без него screencapture даёт пустую картинку.
 - После успеха: уведомление «Скопировано» в острове + лёгкий хаптик.
 - Кнопка «Скриншот» во вкладке «Инструменты».
 - **Готово когда:** нажал клавиши → выделил → вставил в Telegram.
