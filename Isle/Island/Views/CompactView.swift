@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Компактный вид: слева и справа от выреза по 60 pt.
+/// Компактный вид по бокам от выреза.
 struct CompactView: View {
     let content: CompactContent
     let notchWidth: CGFloat
+    let nowPlaying: NowPlayingService
 
     var body: some View {
         HStack(spacing: 0) {
@@ -21,11 +22,17 @@ struct CompactView: View {
             Image(systemName: notification.icon)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.white)
-        case .music:
-            // Обложка появится на этапе 4.
-            RoundedRectangle(cornerRadius: 5)
-                .fill(.white.opacity(0.14))
-                .frame(width: 22, height: 22)
+        case .track:
+            HStack(spacing: 8) {
+                ArtworkView(image: nowPlaying.artwork, size: 22, cornerRadius: 6)
+                Text(nowPlaying.title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 8)
         }
     }
 
@@ -39,11 +46,16 @@ struct CompactView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .padding(.horizontal, 4)
-        case .music:
-            // Звуковой бар появится на этапе 4.
-            Image(systemName: "waveform")
-                .font(.system(size: 13))
-                .foregroundStyle(.white.opacity(0.55))
+        case .track:
+            HStack {
+                Text(nowPlaying.artist)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.white.opacity(0.55))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.leading, 8)
+            .padding(.trailing, 12)
         }
     }
 }

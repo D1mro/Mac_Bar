@@ -26,7 +26,9 @@ struct IslandView: View {
         case .idle:
             EmptyView()
         case .compact(let compact):
-            CompactView(content: compact, notchWidth: model.geometry.notchSize.width)
+            CompactView(content: compact,
+                        notchWidth: model.geometry.notchSize.width,
+                        nowPlaying: model.nowPlaying)
                 .transition(Self.contentTransition)
         case .expanded:
             ExpandedView(model: model)

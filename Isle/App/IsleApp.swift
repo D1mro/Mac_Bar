@@ -43,10 +43,6 @@ private struct MenuContent: View {
                 IslandNotification(icon: "doc.on.clipboard", text: String(localized: "Скопировано"))
             )
         }
-        Button(String(localized: "Тест: музыка вкл/выкл")) {
-            guard let model = appDelegate.island?.model else { return }
-            withAnimation(IslandViewModel.animation) { model.isMusicPlaying.toggle() }
-        }
         #endif
 
         Divider()

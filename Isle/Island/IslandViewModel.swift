@@ -31,11 +31,12 @@ struct IslandNotification: Equatable {
 }
 
 enum CompactContent: Equatable {
-    case music
+    /// Сменился трек: обложка + название слева, исполнитель справа (3 сек).
+    case track
     case notification(IslandNotification)
 }
 
-/// Состояния острова. Приоритет: expanded > notification > music > idle.
+/// Состояния острова. Приоритет: expanded > notification > track > idle.
 enum IslandState: Equatable {
     case idle
     case compact(CompactContent)
@@ -50,20 +51,25 @@ final class IslandViewModel {
 
     var geometry: ScreenGeometry
     var selectedTab: IslandTab = .music
+    /// В плеере показан текст песни вместо управления.
+    var showsLyrics = false
+    let nowPlaying: NowPlayingService
 
     // Входные сигналы — из них state собирается сам.
     private(set) var isExpanded = false
-    var isMusicPlaying = false
     private(set) var notification: IslandNotification?
+    private(set) var isAnnouncingTrack = false
 
-    init(geometry: ScreenGeometry) {
+    init(geometry: ScreenGeometry, nowPlaying: NowPlayingService = .shared) {
         self.geometry = geometry
+        self.nowPlaying = nowPlaying
+        nowPlaying.onTrackChange = { [weak self] in self?.trackChanged() }
     }
 
     var state: IslandState {
         if isExpanded { return .expanded }
         if let notification { return .compact(.notification(notification)) }
-        if isMusicPlaying { return .compact(.music) }
+        if isAnnouncingTrack { return .compact(.track) }
         return .idle
     }
 
@@ -72,8 +78,9 @@ final class IslandViewModel {
         let notch = geometry.notchSize
         switch state {
         case .idle: return notch
-        case .compact: return CGSize(width: notch.width + 120, height: notch.height)
-        case .expanded: return CGSize(width: 520, height: 190)
+        case .compact(.notification): return CGSize(width: notch.width + 120, height: notch.height)
+        case .compact(.track): return CGSize(width: notch.width + 300, height: notch.height)
+        case .expanded: return CGSize(width: 440, height: 190)
         }
     }
 
@@ -88,8 +95,8 @@ final class IslandViewModel {
 
     /// Раскрываемся через 0.05 сек после наведения, закрываемся через 0.3 сек после ухода.
     func setHovering(_ hovering: Bool) {
-        // Пока идёт скриншот, остров не раскрывается от курсора.
-        guard !isCapturing, hovering != isHovering else { return }
+        // Пока идёт скриншот или открыто меню, наведение игнорируем.
+        guard !isCapturing, !isHoverLocked, hovering != isHovering else { return }
         isHovering = hovering
         hoverTask?.cancel()
         let delay: Duration = hovering ? .milliseconds(50) : .milliseconds(300)
@@ -101,6 +108,16 @@ final class IslandViewModel {
             }
             withAnimation(Self.animation) { self.isExpanded = hovering }
         }
+    }
+
+    private var isHoverLocked = false
+
+    /// Выполнить действие (например, показать меню), не закрывая остров от ухода курсора.
+    /// После него остров снова реагирует на курсор при следующем движении мыши.
+    func withHoverLocked(_ action: () -> Void) {
+        isHoverLocked = true
+        action()
+        isHoverLocked = false
     }
 
     /// Сразу свернуть остров (например, перед скриншотом, чтобы не мешал).
@@ -130,6 +147,26 @@ final class IslandViewModel {
             case .cancelled:
                 break
             }
+        }
+    }
+
+    // MARK: - Смена трека
+
+    private var trackTask: Task<Void, Never>?
+
+    private func trackChanged() {
+        LyricsService.shared.load(title: nowPlaying.title,
+                                  artist: nowPlaying.artist,
+                                  duration: nowPlaying.duration)
+        guard nowPlaying.isPlaying, nowPlaying.hasMedia else { return }
+
+        // Показываем новый трек в компактном виде на 3 сек.
+        trackTask?.cancel()
+        withAnimation(Self.animation) { isAnnouncingTrack = true }
+        trackTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled, let self else { return }
+            withAnimation(Self.animation) { self.isAnnouncingTrack = false }
         }
     }
 

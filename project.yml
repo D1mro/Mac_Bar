@@ -30,8 +30,17 @@ targets:
     platform: macOS
     sources:
       - Isle
+      # Скрипт адаптера «Исполняется» — кладём в Resources приложения.
+      - path: Vendor/MediaRemoteAdapter/mediaremote-adapter.pl
+        buildPhase: resources
     dependencies:
       - package: KeyboardShortcuts
+      # Фреймворк адаптера: копируется в Contents/Frameworks, но НЕ линкуется —
+      # его загружает /usr/bin/perl (scripts/build-mediaremote-adapter.sh).
+      - framework: Vendor/MediaRemoteAdapter/MediaRemoteAdapter.framework
+        embed: true
+        link: false
+        codeSign: true
     info:
       path: Isle/Info.plist
       properties:
@@ -39,6 +48,7 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""
+        NSAppleEventsUsageDescription: "Запасной способ узнать, что играет в Spotify и Музыке, если основной не сработал."
         NSCameraUsageDescription: "Isle показывает камеру как зеркало во вкладке «Камера»."
     settings:
       base:

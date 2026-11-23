@@ -7,9 +7,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let cameraMirror = CameraMirrorController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NowPlayingService.shared.start()
         island = IslandController()
         if let model = island?.model {
             HotkeyService.start(island: model, cameraMirror: cameraMirror)
         }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        NowPlayingService.shared.stop()
     }
 }

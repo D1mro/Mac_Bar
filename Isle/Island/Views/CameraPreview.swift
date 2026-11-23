@@ -22,6 +22,11 @@ struct CameraPreview: NSViewRepresentable {
             super.init(frame: .zero)
             wantsLayer = true
             layer = previewLayer
+            // При смене камеры соединение создаётся заново — зеркалим его снова.
+            NotificationCenter.default.addObserver(forName: AVCaptureSession.didStartRunningNotification,
+                                                   object: session, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.applyMirroring() }
+            }
         }
 
         required init?(coder: NSCoder) { fatalError("init(coder:) не используется") }
