@@ -39,6 +39,7 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""
+        NSCameraUsageDescription: "Isle показывает камеру как зеркало во вкладке «Камера»."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.isle.Isle

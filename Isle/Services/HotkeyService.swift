@@ -1,16 +1,22 @@
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    /// Скриншот области в буфер. По умолчанию ⌃⇧S, меняется в настройках.
-    static let screenshot = Self("screenshot", initial: .init(.s, modifiers: [.control, .shift]))
+    // Имена новые (не "screenshot"), чтобы сохранённая старая ⌃⇧S не перебила новые значения.
+    /// Скриншот в буфер. По умолчанию ⌥⇧4.
+    static let takeScreenshot = Self("takeScreenshot", initial: .init(.four, modifiers: [.option, .shift]))
+    /// Камера-зеркало под островом. По умолчанию ⌥⇧3.
+    static let cameraMirror = Self("cameraMirror", initial: .init(.three, modifiers: [.option, .shift]))
 }
 
-/// Глобальные горячие клавиши.
+/// Глобальные горячие клавиши. Меняются в настройках.
 @MainActor
 enum HotkeyService {
-    static func start(model: IslandViewModel) {
-        KeyboardShortcuts.onKeyUp(for: .screenshot) { [weak model] in
-            model?.takeScreenshot()
+    static func start(island: IslandViewModel, cameraMirror: CameraMirrorController) {
+        KeyboardShortcuts.onKeyUp(for: .takeScreenshot) { [weak island] in
+            island?.takeScreenshot()
+        }
+        KeyboardShortcuts.onKeyUp(for: .cameraMirror) { [weak cameraMirror] in
+            cameraMirror?.toggle()
         }
     }
 }

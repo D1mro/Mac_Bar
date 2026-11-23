@@ -9,7 +9,7 @@ struct ToolsTab: View {
         HStack(spacing: 10) {
             ToolTile(icon: "camera.viewfinder",
                      title: String(localized: "Скриншот"),
-                     hint: KeyboardShortcuts.getShortcut(for: .screenshot)?.description) {
+                     hint: KeyboardShortcuts.getShortcut(for: .takeScreenshot)?.description) {
                 model.takeScreenshot()
             }
             Spacer()

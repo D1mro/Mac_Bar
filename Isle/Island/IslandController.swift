@@ -19,7 +19,6 @@ final class IslandController {
         window.orderFrontRegardless()
         startMouseTracking()
         observeScreenChanges()
-        HotkeyService.start(model: model)
     }
 
     // MARK: - Мышь

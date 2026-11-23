@@ -24,6 +24,9 @@ private struct MenuContent: View {
         Button(String(localized: "Скриншот в буфер")) {
             appDelegate.island?.model.takeScreenshot()
         }
+        Button(String(localized: "Камера-зеркало")) {
+            appDelegate.cameraMirror.toggle()
+        }
         Button(String(localized: "Настройки…")) {
             // У приложения-агента нет Dock-иконки, поэтому активируем его вручную,
             // иначе окно настроек откроется за другими окнами.
