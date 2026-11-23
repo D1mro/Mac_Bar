@@ -16,6 +16,7 @@ struct IslandView: View {
         }
         .frame(width: size.width + ear * 2, height: size.height)
         .clipShape(shape)
+        .offset(x: model.horizontalOffset)
         // Прижимаем остров к верхнему краю окна.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -28,6 +29,8 @@ struct IslandView: View {
         case .compact(let compact):
             CompactView(content: compact,
                         notchWidth: model.geometry.notchSize.width,
+                        trackSides: model.trackSides,
+                        trackTitle: model.compactTitle,
                         nowPlaying: model.nowPlaying)
                 .transition(Self.contentTransition)
         case .expanded:

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import Observation
 
@@ -79,9 +80,38 @@ final class IslandViewModel {
         switch state {
         case .idle: return notch
         case .compact(.notification): return CGSize(width: notch.width + 120, height: notch.height)
-        case .compact(.track): return CGSize(width: notch.width + 300, height: notch.height)
+        case .compact(.track):
+            let sides = trackSides
+            return CGSize(width: notch.width + sides.leading + sides.trailing, height: notch.height)
         case .expanded: return CGSize(width: 440, height: 190)
         }
+    }
+
+    /// Название трека для компактного вида: до 10 букв целиком, длиннее — 10 букв + «…».
+    var compactTitle: String {
+        let title = nowPlaying.title
+        return title.count <= 10 ? title : String(title.prefix(10)).trimmingCharacters(in: .whitespaces) + "…"
+    }
+
+    /// Ширина левой и правой части компактного вида «смена трека» — по длине текста:
+    /// слева обложка + название (см. compactTitle), справа исполнитель (60…170 pt).
+    var trackSides: (leading: CGFloat, trailing: CGFloat) {
+        func textWidth(_ text: String, weight: NSFont.Weight) -> CGFloat {
+            let font = NSFont.systemFont(ofSize: 12, weight: weight)
+            return ceil((text as NSString).size(withAttributes: [.font: font]).width)
+        }
+        // Отступы и обложка — те же, что в CompactView.
+        let leading = 12 + 22 + 8 + textWidth(compactTitle, weight: .semibold) + 8
+        let trailing = 8 + textWidth(nowPlaying.artist, weight: .regular) + 12
+        return (max(leading, 60), min(max(trailing, 60), 170))
+    }
+
+    /// Сдвиг острова по горизонтали, чтобы при разной ширине сторон
+    /// пустое место всё равно оставалось ровно под физическим вырезом.
+    var horizontalOffset: CGFloat {
+        guard state == .compact(.track) else { return 0 }
+        let sides = trackSides
+        return (sides.trailing - sides.leading) / 2
     }
 
     var bottomRadius: CGFloat {
@@ -134,7 +164,9 @@ final class IslandViewModel {
 
     func takeScreenshot() {
         guard !isCapturing else { return }
-        collapse()
+        // Обычно сворачиваем остров, чтобы не мешал. В «режиме для скриншотов»
+        // оставляем как есть — пока идёт выбор, он «замирает» и попадает в кадр.
+        if !IslandWindow.showsInScreenshots { collapse() }
         isCapturing = true
         Task {
             defer { isCapturing = false }

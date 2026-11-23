@@ -85,6 +85,16 @@ final class CameraMirrorController {
                        display: true)
     }
 
+    init() {
+        MissionControlWatcher.shared.observe { [weak self] active in
+            guard let self, self.state.isVisible else { return }
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = active ? 0.12 : 0.25
+                self.panel.animator().alphaValue = active ? 0 : 1
+            }
+        }
+    }
+
     private func makePanel() -> NSPanel {
         let panel = NSPanel(contentRect: .zero,
                             styleMask: [.borderless, .nonactivatingPanel],
@@ -92,7 +102,8 @@ final class CameraMirrorController {
                             defer: false)
         panel.isFloatingPanel = true
         panel.level = .statusBar
-        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .fullScreenAuxiliary, .ignoresCycle]
+        // Как у острова: не уезжает при свайпе, в Mission Control прячется.
+        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false

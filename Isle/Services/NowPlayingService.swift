@@ -154,7 +154,9 @@ final class NowPlayingService {
                elapsed: (info["elapsedTimeMicros"] as? Double ?? 0) / 1_000_000,
                timestamp: timestampMicros.map { Date(timeIntervalSince1970: $0 / 1_000_000) } ?? .now,
                isPlaying: info["playing"] as? Bool ?? false,
-               bundleID: bundle)
+               bundleID: bundle,
+               audioPID: (info["processIdentifier"] as? NSNumber).map { pid_t($0.int32Value) },
+               audioBundleID: info["bundleIdentifier"] as? String)
 
         // Обложку декодируем, только когда она поменялась.
         let base64 = info["artworkData"] as? String
@@ -190,9 +192,12 @@ final class NowPlayingService {
 
     // MARK: - Общее
 
+    /// `audioPID` / `audioBundleID` — процесс, который реально играет звук
+    /// (у Safari это com.apple.WebKit.GPU) — нужен живому звуковому бару.
     private func update(title: String, artist: String, duration: TimeInterval,
                         elapsed: TimeInterval, timestamp: Date,
-                        isPlaying: Bool, bundleID: String?) {
+                        isPlaying: Bool, bundleID: String?,
+                        audioPID: pid_t? = nil, audioBundleID: String? = nil) {
         let trackChanged = title != self.title || artist != self.artist
         withAnimation(IslandViewModel.animation) {
             self.title = title
@@ -212,6 +217,10 @@ final class NowPlayingService {
         }
 
         if trackChanged { onTrackChange?() }
+
+        AudioVisualizerService.shared.update(isPlaying: self.isPlaying,
+                                             pid: audioPID,
+                                             bundleIDs: [bundleID, audioBundleID].compactMap { $0 })
     }
 
     private func setArtwork(_ image: NSImage?) {

@@ -5,7 +5,7 @@ import SwiftUI
 /// Размер окна постоянный (с запасом под раскрытый остров),
 /// а сам остров рисуется внутри и меняет размер анимацией.
 final class IslandWindow: NSPanel {
-    static let canvasSize = CGSize(width: 640, height: 260)
+    static let canvasSize = CGSize(width: 760, height: 260)
 
     init<Content: View>(rootView: Content) {
         super.init(contentRect: NSRect(origin: .zero, size: Self.canvasSize),
@@ -14,11 +14,17 @@ final class IslandWindow: NSPanel {
                    defer: false)
         isFloatingPanel = true
         level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
-        // .transient — окно прячется в Mission Control (свайп тремя пальцами вверх),
-        // но остаётся на всех рабочих столах и поверх полноэкранных приложений.
-        collectionBehavior = [.canJoinAllSpaces, .transient, .fullScreenAuxiliary, .ignoresCycle]
-        // Не попадать на скриншоты и запись экрана.
-        sharingType = .none
+        // .stationary — окно стоит на месте при свайпе между рабочими столами
+        // (с .transient оно «уезжало» вместе со старым столом).
+        // В Mission Control такие окна видны — их прячет MissionControlWatcher.
+        collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+        // Не попадать на скриншоты и запись экрана — кроме «режима для скриншотов»
+        // (пункт в меню: чтобы снять остров для постов/README).
+        applySharingMode()
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(defaultsChanged),
+                                               name: UserDefaults.didChangeNotification,
+                                               object: nil)
         backgroundColor = .clear
         isOpaque = false
         hasShadow = false
@@ -33,9 +39,33 @@ final class IslandWindow: NSPanel {
         contentView = host
     }
 
+    static let showInScreenshotsKey = "showInScreenshots"
+
+    /// «Режим для скриншотов» включён: остров виден на снимках и не сворачивается перед ними.
+    static var showsInScreenshots: Bool {
+        UserDefaults.standard.bool(forKey: showInScreenshotsKey)
+    }
+
+    @objc private func defaultsChanged() {
+        applySharingMode()
+    }
+
+    private func applySharingMode() {
+        let show = UserDefaults.standard.bool(forKey: Self.showInScreenshotsKey)
+        sharingType = show ? .readOnly : .none
+    }
+
     // Не забираем фокус у других приложений.
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    /// Плавно спрятать/показать (для Mission Control).
+    func setHiddenAnimated(_ hidden: Bool) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = hidden ? 0.12 : 0.25
+            animator().alphaValue = hidden ? 0 : 1
+        }
+    }
 
     /// Поставить окно по центру верхнего края экрана.
     func place(on geometry: ScreenGeometry) {

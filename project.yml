@@ -49,6 +49,7 @@ targets:
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""
         NSAppleEventsUsageDescription: "Запасной способ узнать, что играет в Spotify и Музыке, если основной не сработал."
+        NSAudioCaptureUsageDescription: "Чтобы звуковой бар двигался в такт музыке."
         NSCameraUsageDescription: "Isle показывает камеру как зеркало во вкладке «Камера»."
     settings:
       base:

@@ -7,6 +7,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let cameraMirror = CameraMirrorController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // ВРЕМЕННО, пока делаем приложение: «режим для скриншотов» включён по умолчанию,
+        // чтобы остров можно было снимать. Выключается в меню; потом убрать эту строку.
+        UserDefaults.standard.register(defaults: [IslandWindow.showInScreenshotsKey: true])
         NowPlayingService.shared.start()
         island = IslandController()
         if let model = island?.model {

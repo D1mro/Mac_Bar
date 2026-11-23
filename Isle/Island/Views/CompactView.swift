@@ -4,13 +4,24 @@ import SwiftUI
 struct CompactView: View {
     let content: CompactContent
     let notchWidth: CGFloat
+    /// Ширина сторон для «смены трека» (считает IslandViewModel по длине текста).
+    let trackSides: (leading: CGFloat, trailing: CGFloat)
+    /// Название, уже обрезанное до 10 букв.
+    let trackTitle: String
     let nowPlaying: NowPlayingService
 
     var body: some View {
         HStack(spacing: 0) {
-            leading.frame(maxWidth: .infinity)
-            Color.clear.frame(width: notchWidth)   // место под физический вырез
-            trailing.frame(maxWidth: .infinity)
+            switch content {
+            case .track:
+                leading.frame(width: trackSides.leading)
+                Color.clear.frame(width: notchWidth)   // место под физический вырез
+                trailing.frame(width: trackSides.trailing)
+            case .notification:
+                leading.frame(maxWidth: .infinity)
+                Color.clear.frame(width: notchWidth)
+                trailing.frame(maxWidth: .infinity)
+            }
         }
         .frame(maxHeight: .infinity)
     }
@@ -25,7 +36,7 @@ struct CompactView: View {
         case .track:
             HStack(spacing: 8) {
                 ArtworkView(image: nowPlaying.artwork, size: 22, cornerRadius: 6)
-                Text(nowPlaying.title)
+                Text(trackTitle)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)

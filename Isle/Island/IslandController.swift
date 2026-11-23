@@ -19,6 +19,14 @@ final class IslandController {
         window.orderFrontRegardless()
         startMouseTracking()
         observeScreenChanges()
+        MissionControlWatcher.shared.observe { [weak self] active in
+            guard let self else { return }
+            self.window.setHiddenAnimated(active)
+            if active {
+                self.window.ignoresMouseEvents = true
+                self.model.collapse()
+            }
+        }
     }
 
     // MARK: - Мышь
@@ -41,6 +49,8 @@ final class IslandController {
     }
 
     private func mouseMoved() {
+        // В Mission Control остров спрятан и не реагирует.
+        guard !MissionControlWatcher.shared.isActive else { return }
         // В свёрнутом виде зона чуть больше острова — чтобы легче попасть курсором.
         let slack: CGFloat = model.state == .expanded ? 0 : 6
         let inside = islandRect.insetBy(dx: -slack, dy: -slack).contains(NSEvent.mouseLocation)
@@ -54,7 +64,7 @@ final class IslandController {
         let screen = model.geometry.screenFrame
         let size = model.size
         let width = size.width + IslandViewModel.earRadius * 2
-        return NSRect(x: screen.midX - width / 2,
+        return NSRect(x: screen.midX - width / 2 + model.horizontalOffset,
                       y: screen.maxY - size.height,
                       width: width,
                       height: size.height)

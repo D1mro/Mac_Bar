@@ -19,6 +19,7 @@ struct IsleApp: App {
 private struct MenuContent: View {
     let appDelegate: AppDelegate
     @Environment(\.openSettings) private var openSettings
+    @AppStorage(IslandWindow.showInScreenshotsKey) private var showInScreenshots = false
 
     var body: some View {
         Button(String(localized: "Скриншот в буфер")) {
@@ -27,6 +28,7 @@ private struct MenuContent: View {
         Button(String(localized: "Камера-зеркало")) {
             appDelegate.cameraMirror.toggle()
         }
+        Toggle(String(localized: "Режим для скриншотов"), isOn: $showInScreenshots)
         Button(String(localized: "Настройки…")) {
             // У приложения-агента нет Dock-иконки, поэтому активируем его вручную,
             // иначе окно настроек откроется за другими окнами.
