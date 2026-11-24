@@ -13,8 +13,28 @@ struct ToolsTab: View {
                 model.takeScreenshot()
             }
             Spacer()
+            WeatherBadge()
         }
         .frame(maxHeight: .infinity, alignment: .top)
+    }
+}
+
+/// Погода справа: температура и описание (Open-Meteo, город в настройках).
+private struct WeatherBadge: View {
+    private var weather = WeatherService.shared
+
+    var body: some View {
+        if let temperature = weather.temperature {
+            HStack(spacing: 6) {
+                Image(systemName: "thermometer")
+                Text(String(format: "%.0f°C", temperature))
+                    .font(.system(size: 11, weight: .medium))
+                if let description = weather.weatherDescription, !description.isEmpty {
+                    Text(description).font(.system(size: 10))
+                }
+            }
+            .foregroundStyle(.white.opacity(0.8))
+        }
     }
 }
 
