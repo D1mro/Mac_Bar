@@ -16,7 +16,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             HotkeyService.start(island: model, cameraMirror: cameraMirror)
         }
         // Этап 5: погода. (PowerService убран — стал ответственен за потерю фокуса.)
-        UserDefaults.standard.register(defaults: [HapticService.isEnabledKey: true])
+        // Город по умолчанию — иначе виджет погоды во вкладке «Инструменты» пустой.
+        UserDefaults.standard.register(defaults: [HapticService.isEnabledKey: true,
+                                                 WeatherService.cityKey: "Москва"])
         WeatherService.shared.update()
     }
 

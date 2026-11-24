@@ -17,5 +17,6 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 420)
         .fixedSize()
+        .onChange(of: city) { _ in WeatherService.shared.update() }
     }
 }
