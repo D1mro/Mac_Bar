@@ -15,15 +15,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let model = island?.model {
             HotkeyService.start(island: model, cameraMirror: cameraMirror)
         }
-        // Этап 5: зарядка, погода.
+        // Этап 5: погода. (PowerService убран — стал ответственен за потерю фокуса.)
         UserDefaults.standard.register(defaults: [HapticService.isEnabledKey: true])
-        PowerService.shared.start()
-        PowerService.shared.onCharging = { [weak island] percent in
-            island?.model.show(IslandNotification(
-                icon: "powerplug",
-                text: String(format: String(localized: "Зарядка %d%%"), percent)
-            ))
-        }
         WeatherService.shared.update()
     }
 

@@ -117,7 +117,6 @@ Isle/
     NowPlayingService.swift  — состояние плеера; MediaRemoteAdapter.swift, AppleScriptPlayer.swift — источники
     ArtworkPalette.swift     — акцентный цвет из обложки
     AudioOutputService.swift — устройства вывода (CoreAudio)
-    PowerService.swift       — зарядка (IOKit)
     WeatherService.swift     — Open-Meteo, без ключа
     LyricsService.swift      — lrclib.net
     HapticService.swift
