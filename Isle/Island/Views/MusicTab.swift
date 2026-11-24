@@ -69,11 +69,7 @@ struct MusicTab: View {
                     iconButton("list.bullet") { player.openSourceApp() }
                 }
                 HStack(spacing: 8) {
-                    if let icon = player.appIcon {
-                        Image(nsImage: icon)
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                    }
+                    SourceAppButton(model: model, player: player)
                     SoundBars(isPlaying: player.isPlaying, color: player.accent)
                 }
             }
@@ -267,4 +263,51 @@ private final class ClosureMenuItem: NSMenuItem {
     required init(coder: NSCoder) { fatalError("init(coder:) не используется") }
 
     @objc private func fire() { handler() }
+}
+
+// MARK: - Источник: меню плееров
+
+/// Иконка приложения-источника; по клику — меню выбора плеера.
+private struct SourceAppButton: View {
+    let model: IslandViewModel
+    let player: NowPlayingService
+
+    var body: some View {
+        Button(action: showMenu) {
+            if let icon = player.appIcon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+            }
+        }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .help(String(localized: "Плееры"))
+    }
+
+    private func showMenu() {
+        let menu = NSMenu()
+        let players = MusicPlayerCatalog.shared.menuPlayers(currentBundleID: player.bundleID)
+        guard !players.isEmpty else {
+            let empty = ClosureMenuItem(title: String(localized: "Нет плееров")) { }
+            empty.isEnabled = false
+            menu.addItem(empty)
+            show(menu)
+            return
+        }
+        for entry in players {
+            let item = ClosureMenuItem(title: entry.name) { MusicPlayerCatalog.shared.open(entry) }
+            item.state = entry.bundleID == player.bundleID ? .on : .off
+            item.image = NSImage(systemSymbolName: "music.note", accessibilityDescription: nil)
+            menu.addItem(item)
+        }
+        show(menu)
+    }
+
+    private func show(_ menu: NSMenu) {
+        // Пока меню открыто, остров не закрывается от ухода курсора (как у вывода звука).
+        model.withHoverLocked {
+            menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+        }
+    }
 }
