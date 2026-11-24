@@ -122,7 +122,6 @@ Isle/
     LyricsService.swift      — lrclib.net
     HapticService.swift
   Desktop/
-    CornerWindows.swift      — скруглённые нижние углы экрана
     WallpaperService.swift
     DesktopWidgetsWindow.swift
   LockScreen/                — этап 9, экспериментально

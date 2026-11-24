@@ -15,7 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let model = island?.model {
             HotkeyService.start(island: model, cameraMirror: cameraMirror)
         }
-        // Этап 5: зарядка, погода, углы экрана.
+        // Этап 5: зарядка, погода.
         UserDefaults.standard.register(defaults: [HapticService.isEnabledKey: true])
         PowerService.shared.start()
         PowerService.shared.onCharging = { [weak island] percent in
@@ -25,7 +25,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ))
         }
         WeatherService.shared.update()
-        CornerWindows.shared.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
