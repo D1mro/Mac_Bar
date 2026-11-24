@@ -21,10 +21,13 @@ final class IslandWindow: NSPanel {
         // Не попадать на скриншоты и запись экрана — кроме «режима для скриншотов»
         // (пункт в меню: чтобы снять остров для постов/README).
         applySharingMode()
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(defaultsChanged),
-                                               name: UserDefaults.didChangeNotification,
-                                               object: nil)
+        // Системные фреймворки могут менять UserDefaults в фоне — обрабатываем только
+        // на главном потоке, иначе @MainActor-метод упадёт по Swift 6.
+        defaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.applySharingMode() }
+        }
         backgroundColor = .clear
         isOpaque = false
         hasShadow = false
@@ -40,14 +43,11 @@ final class IslandWindow: NSPanel {
     }
 
     static let showInScreenshotsKey = "showInScreenshots"
+    private var defaultsObserver: NSObjectProtocol?
 
     /// «Режим для скриншотов» включён: остров виден на снимках и не сворачивается перед ними.
     static var showsInScreenshots: Bool {
         UserDefaults.standard.bool(forKey: showInScreenshotsKey)
-    }
-
-    @objc private func defaultsChanged() {
-        applySharingMode()
     }
 
     private func applySharingMode() {
