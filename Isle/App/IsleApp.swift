@@ -20,6 +20,7 @@ private struct MenuContent: View {
     let appDelegate: AppDelegate
     @Environment(\.openSettings) private var openSettings
     @AppStorage(IslandWindow.showInScreenshotsKey) private var showInScreenshots = false
+    @AppStorage(DesktopWidget.enabledKey) private var widgetsEnabled = true
 
     var body: some View {
         Button(String(localized: "Скриншот в буфер")) {
@@ -28,6 +29,17 @@ private struct MenuContent: View {
         Button(String(localized: "Камера-зеркало")) {
             appDelegate.cameraMirror.toggle()
         }
+        Button(String(localized: "Сменить обои…")) {
+            WallpaperService.shared.choose()
+        }
+        Toggle(String(localized: "Виджеты на рабочем столе"), isOn: $widgetsEnabled)
+            .onChange(of: widgetsEnabled) { enabled in
+                if enabled {
+                    appDelegate.desktopWidgets.start()
+                } else {
+                    appDelegate.desktopWidgets.stop()
+                }
+            }
         Toggle(String(localized: "Режим для скриншотов"), isOn: $showInScreenshots)
         Button(String(localized: "Настройки…")) {
             // У приложения-агента нет Dock-иконки, поэтому активируем его вручную,
