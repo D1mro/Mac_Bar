@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 import IOKit.ps
 
@@ -6,21 +7,28 @@ import IOKit.ps
 final class PowerService {
     static let shared = PowerService()
 
-    private var timer: Timer?
-    private var isCharging = false
-
     /// Последний известный процент заряда (0…100).
     private(set) var percent: Int?
 
-    /// Вызывается один раз в момент начала зарядки кабелем.
+    /// Вызывается при изменении состояния источников питания.
     var onCharging: ((Int) -> Void)?
+
+    private var isCharging = false
+    private var runLoopSource: CFRunLoopSource?
 
     func start() {
         update()
-        // Опрашиваем процент каждые 5 сек — проще, чем IOPSNotificationCreateRunLoopSource.
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.update() }
+        // IOKit-события: вместо 5-секундного опроса — уведомление при изменении питания.
+        if let source = IOPSNotificationCreateRunLoopSource({ _ in
+            MainActor.assumeIsolated { PowerService.shared.powerSourceChanged() }
+        }, nil)?.takeUnretainedValue() {
+            runLoopSource = source
+            CFRunLoopAddSource(CFRunLoopGetMain(), source, CFRunLoopMode.commonModes)
         }
+    }
+
+    private func powerSourceChanged() {
+        update()
     }
 
     private func update() {
